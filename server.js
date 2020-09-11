@@ -1,13 +1,10 @@
 const express = require('express');
-const {
-    ApolloServer,
-    gql
-} = require('apollo-server-express');
+const { ApolloServer } = require('apollo-server-express');
 require('dotenv').config();
 const cors = require('cors');
 const mongoose = require('mongoose');
 const typeDefs = require('./graphql/typedefs');
-const resolvers = require('./graphql/resolvers').default;
+const resolvers = require('./graphql/resolvers');
 
 const init = async () => {
     const PORT = process.env.PORT || 4000;
@@ -38,7 +35,7 @@ const init = async () => {
     app.listen({
         port: PORT
     }, () =>
-        console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
+        console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`)
     );
 };
 
