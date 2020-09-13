@@ -2,7 +2,7 @@ const {
     gql
 } = require('apollo-server-express');
 
-const typeDefs = gql`
+const typeDefs = gql `
     type Ratings {
         one: Int
         two: Int
@@ -17,9 +17,18 @@ const typeDefs = gql`
         rating: Int
         ratings: Ratings
     }
+    type Theme {
+        name: String
+        homepage: String
+        description: String
+        rating: Int
+        screenshot_url: String
+        preview_url: String
+    }
     type Query {
         hello(recipient: String!): String!
         searchPlugin(query: String!): [Plugin]
+        searchTheme(query: String!): [Theme]
     }
 `;
 
