@@ -12,6 +12,8 @@ const typeDefs = gql `
     }
     type Plugin {
         name: String
+        author: String
+        slug: String
         homepage: String
         downloads: Int
         rating: Int
@@ -19,8 +21,11 @@ const typeDefs = gql `
     }
     type Theme {
         name: String
+        author: String
+        slug: String
         homepage: String
         description: String
+        downloads: Int
         rating: Int
         screenshot_url: String
         preview_url: String
@@ -29,6 +34,8 @@ const typeDefs = gql `
         hello(recipient: String!): String!
         searchPlugin(query: String!): [Plugin]
         searchTheme(query: String!): [Theme]
+        getPluginInfo(slug: String!): Plugin
+        getThemeInfo(slug: String!): Theme
     }
 `;
 
