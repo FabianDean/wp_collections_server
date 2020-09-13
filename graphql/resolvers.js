@@ -2,10 +2,6 @@ const fetch = require('node-fetch');
 
 const resolvers = {
     Query: {
-        hello: (_, {
-            recipient
-        }) => `Hello ${recipient}!`,
-
         searchPlugin: async (_, {
             query
         }) => {
