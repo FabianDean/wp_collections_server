@@ -1,22 +1,22 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
 const CollectionSchema = new Schema({
     _id: {
         type: ObjectId,
-        required: true
+        required: true,
     },
     name: String,
     owner_id: {
         type: ObjectId,
-        required: true
+        required: true,
     },
     date_created: String,
     type: {
         type: String,
-        enum: ["PLUGIN", "THEME", "MIXED"],
-        default: "MIXED"
+        enum: ['PLUGIN', 'THEME', 'MIXED'],
+        default: 'MIXED',
     },
     plugins: [
         {
@@ -31,9 +31,9 @@ const CollectionSchema = new Schema({
                 two: Number,
                 three: Number,
                 four: Number,
-                five: Number
-            }
-        }
+                five: Number,
+            },
+        },
     ],
     themes: [
         {
@@ -45,9 +45,9 @@ const CollectionSchema = new Schema({
             downloads: Number,
             rating: Number,
             screenshot_url: String,
-            preview_url: String
-        }
-    ]
+            preview_url: String,
+        },
+    ],
 });
 
 // validate URL

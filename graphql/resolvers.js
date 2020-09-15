@@ -1,8 +1,8 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Types = mongoose.Types;
-const fetch = require("node-fetch");
-const User = require("../models/User/User");
-const Collection = require("../models/Collection/Collection");
+const fetch = require('node-fetch');
+const User = require('../models/User/User');
+const Collection = require('../models/Collection/Collection');
 
 const resolvers = {
     Query: {
@@ -12,14 +12,14 @@ const resolvers = {
 
         getUser: async (_, { username }) => {
             const user = await User.findOne({
-                username: username
+                username: username,
             }).exec();
-            return user || new Error("User does not exist");
+            return user || new Error('User does not exist');
         },
 
         getCollection: async (_, { collectionId }) => {
             const collection = await Collection.findById({
-                _id: collectionId
+                _id: collectionId,
             }).exec();
             return collection;
         },
@@ -30,7 +30,7 @@ const resolvers = {
 
         searchPlugin: async (_, { query }) => {
             const res = await fetch(
-                `${process.env.WP_SEARCH_PLUGIN_URL_BEGIN}${query}${process.env.WP_SEARCH_PLUGIN_URL_END}`
+                `${process.env.WP_SEARCH_PLUGIN_URL_BEGIN}${query}${process.env.WP_SEARCH_PLUGIN_URL_END}`,
             );
             const data = await res.json();
             const regex = /(<([^>]+)>)/gi; // used to remove the anchor tags around author
@@ -38,9 +38,9 @@ const resolvers = {
             return data.plugins.map((item) => {
                 return {
                     name: item.name,
-                    author: item.author.replace(regex, ""),
+                    author: item.author.replace(regex, ''),
                     slug: item.slug,
-                    homepage: item.homepage || "",
+                    homepage: item.homepage || '',
                     downloads: item.downloaded,
                     rating: item.rating,
                     ratings: {
@@ -48,15 +48,15 @@ const resolvers = {
                         two: item.ratings[2],
                         three: item.ratings[3],
                         four: item.ratings[4],
-                        five: item.ratings[5]
-                    }
+                        five: item.ratings[5],
+                    },
                 };
             });
         },
 
         searchTheme: async (_, { query }) => {
             const res = await fetch(
-                `${process.env.WP_SEARCH_THEME_URL}${query}`
+                `${process.env.WP_SEARCH_THEME_URL}${query}`,
             );
             const data = await res.json();
 
@@ -69,7 +69,7 @@ const resolvers = {
                     description: item.description,
                     rating: item.rating,
                     screenshot_url: item.screenshot_url,
-                    preview_url: item.preview_url
+                    preview_url: item.preview_url,
                 };
             });
         },
@@ -88,7 +88,7 @@ const resolvers = {
             const regex = /(<([^>]+)>)/gi; // used to remove the anchor tags around author
 
             return {};
-        }
+        },
     },
 
     Mutation: {
@@ -109,8 +109,8 @@ const resolvers = {
         },
         deleteCollection: async (_, { projectId }) => {
             return null;
-        }
-    }
+        },
+    },
 };
 
 module.exports = resolvers;
