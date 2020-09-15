@@ -1,14 +1,19 @@
-const {
-    gql
-} = require('apollo-server-express');
+const { gql } = require("apollo-server-express");
 
-const typeDefs = gql `
+const typeDefs = gql`
     enum CollectionType {
         PLUGIN
         THEME
         MIXED
     }
     type Ratings {
+        one: Int
+        two: Int
+        three: Int
+        four: Int
+        five: Int
+    }
+    input RatingsInput {
         one: Int
         two: Int
         three: Int
@@ -24,6 +29,15 @@ const typeDefs = gql `
         rating: Int
         ratings: Ratings
     }
+    input PluginInput {
+        name: String
+        author: String
+        slug: String
+        homepage: String
+        downloads: Int
+        rating: Int
+        ratings: RatingsInput
+    }
     type Theme {
         name: String
         author: String
@@ -35,41 +49,54 @@ const typeDefs = gql `
         screenshot_url: String
         preview_url: String
     }
-    type UserInput {
-        username: String!
-        email: String!
-        password: String!
-        date_created: String
-        premium: Boolean!
-        collection_ids: [ID] 
+    input ThemeInput {
+        name: String
+        author: String
+        slug: String
+        homepage: String
+        description: String
+        downloads: Int
+        rating: Int
+        screenshot_url: String
+        preview_url: String
     }
     type User {
         _id: ID!
         username: String!
         email: String!
         password: String!
-        date_created: String
         premium: Boolean!
-        collection_ids: [ID] 
-    }
-    type CollectionInput {
-        name: String!
-        type: CollectionType
+        collection_ids: [ID]
         date_created: String
-        plugins: [Plugin]
-        themes: [Theme]
+    }
+    input UserInput {
+        username: String!
+        email: String!
+        password: String!
+        premium: Boolean!
+        collection_ids: [ID]
+        date_created: String
     }
     type Collection {
         _id: ID!
         name: String!
-        type: CollectionType
+        owner_id: ID!
         date_created: String
+        type: CollectionType
         plugins: [Plugin]
         themes: [Theme]
     }
+    input CollectionInput {
+        name: String!
+        owner_id: ID!
+        date_created: String
+        type: CollectionType
+        plugins: [PluginInput]
+        themes: [ThemeInput]
+    }
     type Query {
         authenticate(email: String!, password: String!): User
-        getUser(userId: ID!): User
+        getUser(username: String!): User
         getCollection(collectionId: ID!): Collection
         getCollections(userId: ID!): [Collection]
         searchPlugin(query: String!): [Plugin]
@@ -81,10 +108,13 @@ const typeDefs = gql `
         createUser(user: UserInput!): User!
         createCollection(collection: CollectionInput!): Collection!
         updateUser(userId: ID!, user: UserInput!): User!
-        updateCollection(collectionId: ID!, collection: CollectionInput!): Collection!
+        updateCollection(
+            collectionId: ID!
+            collection: CollectionInput!
+        ): Collection!
         deleteUser(userId: ID!): Boolean!
         deleteCollection(projectId: ID!): Boolean!
     }
-    `;
+`;
 
 module.exports = typeDefs;
