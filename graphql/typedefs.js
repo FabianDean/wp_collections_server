@@ -61,11 +61,11 @@ const typeDefs = gql`
         preview_url: String
     }
     type User {
-        _id: ID!
+        _id: String!
         username: String!
         email: String!
         password: String!
-        premium: Boolean!
+        premium: Boolean
         collection_ids: [ID]
         date_created: String
     }
@@ -73,12 +73,12 @@ const typeDefs = gql`
         username: String!
         email: String!
         password: String!
-        premium: Boolean!
-        collection_ids: [ID]
-        date_created: String
+    }
+    type AuthPayload {
+        user: User
     }
     type Collection {
-        _id: ID!
+        _id: String!
         name: String!
         owner_id: ID!
         date_created: String
@@ -95,7 +95,7 @@ const typeDefs = gql`
         themes: [ThemeInput]
     }
     type Query {
-        authenticate(email: String!, password: String!): User
+        currentUser: User
         getUser(username: String!): User
         getCollection(collectionId: ID!): Collection
         getCollections(userId: ID!): [Collection]
@@ -105,7 +105,9 @@ const typeDefs = gql`
         getThemeInfo(slug: String!): Theme
     }
     type Mutation {
-        createUser(user: UserInput!): User!
+        login(email: String!, password: String!): AuthPayload
+        signup(username: String!, email: String!, password: String!): AuthPayload
+        logout: Boolean
         createCollection(collection: CollectionInput!): Collection!
         updateUser(userId: ID!, user: UserInput!): User!
         updateCollection(

@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+const User = require('./User');
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
 const UserSchema = new Schema({
     _id: {
-        type: ObjectId,
+        type: String,
         required: true,
     },
     username: {
@@ -21,7 +22,6 @@ const UserSchema = new Schema({
     },
     premium: {
         type: Boolean,
-        required: true,
     },
     collection_ids: {
         type: [ObjectId],

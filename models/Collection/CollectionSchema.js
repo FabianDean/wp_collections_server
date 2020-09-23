@@ -4,10 +4,13 @@ const ObjectId = Schema.Types.ObjectId;
 
 const CollectionSchema = new Schema({
     _id: {
-        type: ObjectId,
+        type: String,
         required: true,
     },
-    name: String,
+    name: {
+        type: String,
+        required: true,
+    },
     owner_id: {
         type: ObjectId,
         required: true,

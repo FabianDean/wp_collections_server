@@ -1,22 +1,22 @@
 const mongoose = require('mongoose');
 const Types = mongoose.Types;
 const fetch = require('node-fetch');
+const { v4: uuid } = require('uuid'); 
 const User = require('../models/User/User');
 const Collection = require('../models/Collection/Collection');
 
 const resolvers = {
     Query: {
-        /** @summary Authenticate a User
-         * @param email
-         * @param password TODO: encrypt
-         * @returns The requested User if they exist or null if the User doesn't exist
+        /** @summary Get currently logged in user
+         * @returns currently logged in user or null if not logged in
          */
-        authenticate: async (_, { email, password }) => {
-            return null;
+        currentUser: async (_, args, context) => {
+            const user = context.getUser();
+            return user;
         },
 
         /** @summary Get a specific User
-         * @param username
+         * @param {string} username
          * @returns The requested User if they exist or null if the User doesn't exist
          */
         getUser: async (_, { username }) => {
@@ -46,7 +46,7 @@ const resolvers = {
         },
 
         /** @summary Search for a plugin
-         * @param query
+         * @param {string} query
          * @returns A list of Plugins matching the query
          */
         searchPlugin: async (_, { query }) => {
@@ -76,7 +76,7 @@ const resolvers = {
         },
 
         /** @summary Search for a theme
-         * @param query
+         * @param {string} query
          * @returns A list of Themes matching the query
          */
         searchTheme: async (_, { query }) => {
@@ -100,7 +100,7 @@ const resolvers = {
         },
 
         /** @summary Get information about a specific plugin.
-         * @param slug The plugin's slug
+         * @param {string} slug The plugin's slug
          */
         getPluginInfo: async (_, { slug: String }) => {
             const res = await fetch(`${process.env.WP_PLUGIN_INFO_URL}${slug}`);
@@ -123,12 +123,53 @@ const resolvers = {
     },
 
     Mutation: {
-        /** @summary Create a new User
-         * @param user username, email, password, premium, collectionIds, date_created
-         * @returns The newly created User if successful or null if unsuccessful
+        /** @summary Authenticate a User
+         * @param {string} email
+         * @param {string} password
+         * @returns The requested User if they exist or null if the User doesn't exist
          */
-        createUser: async (_, { user }) => {
-            return null;
+        login: async (_, { email, password }, context) => {
+            const { user } = await context.authenticate(
+                'graphql-local',
+                { email, password },
+            );
+            await context.login(user);
+
+            return { user };
+        },
+
+        /** @summary Register a new user
+         * @param {string} username
+         * @param {string} email
+         * @param {string} password
+         * @returns The newly created user or Error if email already exists
+         */
+        signup: async (_, { username, email, password }, context) => {
+            const existingUsers = await context.User.schema.statics.getUsers();
+            const userWithEmailExists = !!existingUsers.find((user) => {
+                return user.email === email;
+            });
+
+            if (userWithEmailExists) {
+                throw new Error('User with this email already exists.');
+            }
+
+            const newUser = {
+                _id: uuid(),
+                username,
+                email,
+                password,
+            };
+
+            await context.User.schema.statics.addUser(newUser);
+
+            await context.login(newUser);
+
+            return { user: newUser };
+        },
+
+        logout: async (_, args, context) => {
+            return context.logout();
         },
 
         /** @summary Create a new Collection
