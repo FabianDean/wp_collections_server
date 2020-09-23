@@ -17,6 +17,8 @@ User.schema.statics = {
             return User.create({
                 ...user,
                 password: hashedPassword,
+                collection_ids: [],
+                facebook_id: null,
                 premium: 'false',
                 date_created: DateTime.utc().toISODate(),
             });

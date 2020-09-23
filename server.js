@@ -1,8 +1,10 @@
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 require('dotenv').config();
+const { DateTime } = require('luxon');
 const session = require('express-session');
 const passport = require('passport');
+const FacebookStrategy = require('passport-facebook');
 const { GraphQLLocalStrategy, buildContext } = require('graphql-passport');
 const { v4: uuid } = require('uuid');
 const cors = require('cors');
@@ -27,6 +29,18 @@ const init = async () => {
     app.use(cors(corsConfig));
 
     /**
+     * Configure express-session with uuid
+     */
+    app.use(
+        session({
+            genid: (req) => uuid(),
+            secret: process.env.SESSION_SECRET,
+            resave: false,
+            saveUninitialized: false,
+        }),
+    );
+
+    /**
      * Configure Mongoose and connect to db
      */
 
@@ -47,6 +61,9 @@ const init = async () => {
     /**
      * Configure Passport
      */
+    app.use(passport.initialize());
+    app.use(passport.session());
+
     passport.use(
         new GraphQLLocalStrategy(async (email, password, done) => {
             const users = await User.schema.statics.getUsers();
@@ -61,6 +78,49 @@ const init = async () => {
         }),
     );
 
+    const facebookOptions = {
+        clientID: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        callbackURL: 'http://localhost:4000/auth/facebook/callback',
+        profileFields: ['id', 'email', 'first_name', 'last_name'],
+    };
+
+    const facebookCallback = async (
+        accessToken,
+        refreshToken,
+        profile,
+        done,
+    ) => {
+        const users = await User.schema.statics.getUsers();
+        const matchingUser = await users.find(
+            (user) => user.facebook_id === profile.id,
+        );
+
+        if (matchingUser) {
+            done(null, matchingUser);
+            return;
+        }
+
+        const newUserConfig = {
+            _id: uuid(),
+            facebook_id: profile.id,
+            username: `${profile.name.givenName} ${profile.name.familyName}`,
+            email:
+                profile.emails && profile.emails[0] && profile.emails[0].value,
+        };
+
+        const newUser = await User.create({
+            ...newUserConfig,
+            premium: 'false',
+            collection_ids: [],
+            date_created: DateTime.utc().toISODate(),
+        });
+
+        done(null, newUser);
+    };
+
+    passport.use(new FacebookStrategy(facebookOptions, facebookCallback));
+
     passport.serializeUser((user, done) => {
         done(null, user._id);
     });
@@ -73,25 +133,21 @@ const init = async () => {
         done(null, matchingUser);
     });
 
-    /**
-     * Configure express-session with uuid
-     */
-    app.use(
-        session({
-            genid: (req) => uuid(),
-            secret: process.env.SESSION_SECRET,
-            resave: false,
-            saveUninitialized: false,
+    app.get(
+        '/auth/facebook',
+        passport.authenticate('facebook', { scope: ['email'] }),
+    );
+    app.get(
+        '/auth/facebook/callback',
+        passport.authenticate('facebook', {
+            successRedirect: 'http://localhost:4000/graphql',
+            failureRedirect: 'http://localhost:4000/graphql',
         }),
     );
-
-    app.use(passport.initialize());
-    app.use(passport.session());
 
     /**
      * Configure Apollo Server
      */
-
     const server = new ApolloServer({
         typeDefs,
         resolvers,

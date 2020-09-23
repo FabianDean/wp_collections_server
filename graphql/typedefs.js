@@ -64,7 +64,8 @@ const typeDefs = gql`
         _id: String!
         username: String!
         email: String!
-        password: String!
+        password: String
+        facebook_id: String
         premium: Boolean
         collection_ids: [ID]
         date_created: String
@@ -96,7 +97,7 @@ const typeDefs = gql`
     }
     type Query {
         currentUser: User
-        getUser(username: String!): User
+        getUser(email: String!): User
         getCollection(collectionId: ID!): Collection
         getCollections(userId: ID!): [Collection]
         searchPlugin(query: String!): [Plugin]
@@ -106,7 +107,11 @@ const typeDefs = gql`
     }
     type Mutation {
         login(email: String!, password: String!): AuthPayload
-        signup(username: String!, email: String!, password: String!): AuthPayload
+        signup(
+            username: String!
+            email: String!
+            password: String!
+        ): AuthPayload
         logout: Boolean
         createCollection(collection: CollectionInput!): Collection!
         updateUser(userId: ID!, user: UserInput!): User!

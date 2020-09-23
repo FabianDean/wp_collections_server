@@ -1,9 +1,13 @@
 const mongoose = require('mongoose');
 const Types = mongoose.Types;
 const fetch = require('node-fetch');
-const { v4: uuid } = require('uuid'); 
+const { v4: uuid } = require('uuid');
 const User = require('../models/User/User');
 const Collection = require('../models/Collection/Collection');
+
+const checkUser = async (email, context) => {
+    return true;
+};
 
 const resolvers = {
     Query: {
@@ -16,13 +20,24 @@ const resolvers = {
         },
 
         /** @summary Get a specific User
-         * @param {string} username
-         * @returns The requested User if they exist or null if the User doesn't exist
+         * @param {string} email
+         * @returns The requested User if they exist
          */
-        getUser: async (_, { username }) => {
+        getUser: async (_, { email }, context) => {
+            const currentUser = context.getUser();
+
+            if (!currentUser) {
+                return new Error('Permission denied');
+            }
+
             const user = await User.findOne({
-                username: username,
+                email: email,
             }).exec();
+
+            if (user && currentUser._id !== user._id) {
+                return new Error('Permission denied');
+            }
+
             return user || new Error('User does not exist');
         },
 
@@ -129,10 +144,10 @@ const resolvers = {
          * @returns The requested User if they exist or null if the User doesn't exist
          */
         login: async (_, { email, password }, context) => {
-            const { user } = await context.authenticate(
-                'graphql-local',
-                { email, password },
-            );
+            const { user } = await context.authenticate('graphql-local', {
+                email,
+                password,
+            });
             await context.login(user);
 
             return { user };
