@@ -22,7 +22,7 @@ const UserSchema = new Schema({
         type: Boolean,
     },
     collection_ids: {
-        type: [ObjectId],
+        type: [String],
     },
     date_created: String,
 });

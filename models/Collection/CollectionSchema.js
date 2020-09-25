@@ -12,7 +12,7 @@ const CollectionSchema = new Schema({
         required: true,
     },
     owner_id: {
-        type: ObjectId,
+        type: String,
         required: true,
     },
     date_created: String,

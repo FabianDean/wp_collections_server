@@ -93,17 +93,13 @@ const typeDefs = gql`
     }
     input CollectionInput {
         name: String!
-        owner_id: ID!
-        date_created: String
         type: CollectionType
-        plugins: [PluginInput]
-        themes: [ThemeInput]
     }
     type Query {
         currentUser: User
         getUser(email: String!): User
-        getCollection(collectionId: ID!): Collection
-        getCollections(userId: ID!): [Collection]
+        getCollection(collection_id: ID!): Collection
+        getCollections(user_id: ID!): [Collection]
         searchPlugin(query: String!): [Plugin]
         searchTheme(query: String!): [Theme]
         getPluginInfo(slug: String!): Plugin
@@ -117,14 +113,17 @@ const typeDefs = gql`
             password: String!
         ): AuthPayload
         logout: Boolean
-        createCollection(collection: CollectionInput!): Collection!
-        updateUser(userId: ID!, user: UserInput!): User!
+        createCollection(
+            email: String!
+            collection: CollectionInput!
+        ): Collection!
+        updateUser(user_id: ID!, user: UserInput!): User!
         updateCollection(
-            collectionId: ID!
+            collection_id: ID!
             collection: CollectionInput!
         ): Collection!
         deleteUser(email: String!): Boolean!
-        deleteCollection(collectionId: ID!): Boolean!
+        deleteCollection(collection_id: ID!): Boolean!
     }
 `;
 

@@ -27,6 +27,7 @@ const resolvers = {
         getUser: async (_, { email }, context) => {
             const currentUser = context.getUser();
 
+            // if not logged in
             if (!currentUser) {
                 return new Error('Permission denied');
             }
@@ -35,6 +36,7 @@ const resolvers = {
                 email: email,
             }).exec();
 
+            // if the user logged in does not match the account to delete
             if (user && currentUser._id !== user._id) {
                 return new Error('Permission denied');
             }
@@ -43,21 +45,21 @@ const resolvers = {
         },
 
         /** @summary Get a specific collection
-         * @param collectionId
+         * @param collection_id
          * @returns The requested Collection if it exists or null if it doesn't exist
          */
-        getCollection: async (_, { collectionId }) => {
+        getCollection: async (_, { collection_id }) => {
             const collection = await Collection.findById({
-                _id: collectionId,
+                _id: collection_id,
             }).exec();
             return collection;
         },
 
         /** @summary Get collections belonging to a certain user.
-         * @param userId
+         * @param user_id
          * @returns A list of all a user's collections
          */
-        getCollections: async (_, { userId }) => {
+        getCollections: async (_, { user_id }) => {
             return null;
         },
 
@@ -121,7 +123,7 @@ const resolvers = {
         /** @summary Get information about a specific plugin.
          * @param {string} slug The plugin's slug
          */
-        getPluginInfo: async (_, { slug: String }) => {
+        getPluginInfo: async (_, { slug }) => {
             const res = await fetch(`${process.env.WP_PLUGIN_INFO_URL}${slug}`);
             const data = await res.json();
             const regex = /(<([^>]+)>)/gi; // used to remove the anchor tags around author
@@ -195,33 +197,7 @@ const resolvers = {
          * @param collection name, owner_id, date_created, type, plugins, themes
          * @returns The newly created Collection if successful or null if unsuccessful
          */
-        createCollection: async (_, { collection }) => {
-            return null;
-        },
-
-        /** @summary Update a User
-         * @param userId
-         * @param user username, email, password, premium, collectionIds, date_created
-         * @returns The updated User if successful or null if unsuccessful
-         */
-        updateUser: async (_, { userId, user }) => {
-            return null;
-        },
-
-        /** @summary Update a Collection
-         * @param collectionId
-         * @param collection name, owner_id, date_created, type, plugins, themes
-         * @returns The updated Collection if successful or null if unsuccessful
-         */
-        updateCollection: async (_, { collectionId, collection }) => {
-            return null;
-        },
-
-        /** @summary Delete a User
-         * @param email The email of the user to delete
-         * @returns True if successful
-         */
-        deleteUser: async (_, { email }, context) => {
+        createCollection: async (_, { email, collection }, context) => {
             const currentUser = context.getUser();
 
             if (!currentUser) {
@@ -232,12 +208,68 @@ const resolvers = {
                 email: email,
             }).exec();
 
+            // if the user logged in does not match the account to delete
+            if (user && currentUser._id !== user._id) {
+                return new Error('Permission denied');
+            }
+
+            const newCollection = await Collection.schema.statics.createCollection(
+                collection,
+                user,
+            );
+
+            // add collection's id to user's collection_ids
+            await user
+                .updateOne({
+                    collection_ids: [...user.collection_ids, newCollection._id],
+                })
+                .exec();
+
+            return newCollection || new Error('Error creating collection');
+        },
+
+        /** @summary Update a User
+         * @param userId
+         * @param user username, email, password, premium, collectionIds, date_created
+         * @returns The updated User if successful or null if unsuccessful
+         */
+        updateUser: async (_, { user_id, user }) => {
+            return null;
+        },
+
+        /** @summary Update a Collection
+         * @param collectionId
+         * @param collection name, owner_id, date_created, type, plugins, themes
+         * @returns The updated Collection if successful or null if unsuccessful
+         */
+        updateCollection: async (_, { collection_id, collection }) => {
+            return null;
+        },
+
+        /** @summary Delete a User
+         * @param email The email of the user to delete
+         * @returns True if successful
+         */
+        deleteUser: async (_, { email }, context) => {
+            const currentUser = context.getUser();
+
+            // if not logged in
+            if (!currentUser) {
+                return new Error('Permission denied');
+            }
+
+            const user = await User.findOne({
+                email: email,
+            }).exec();
+
+            // if the user logged in does not match the account to delete
             if (user && currentUser._id !== user._id) {
                 return new Error('Permission denied');
             }
 
             const deletedUser = await User.schema.statics.deleteUser(email);
 
+            // if successful, close session
             if (deletedUser) {
                 await context.logout();
             }
@@ -246,10 +278,10 @@ const resolvers = {
         },
 
         /** @summary Delete a Collection
-         * @param collectionId The ID of the collection to delete
+         * @param collection_id The ID of the collection to delete
          * @returns True if successful or false if unsuccessful
          */
-        deleteCollection: async (_, { collectionId }) => {
+        deleteCollection: async (_, { collection_id }, context) => {
             return null;
         },
     },
