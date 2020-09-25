@@ -123,7 +123,7 @@ const typeDefs = gql`
             collectionId: ID!
             collection: CollectionInput!
         ): Collection!
-        deleteUser(userId: ID!): Boolean!
+        deleteUser(email: String!): Boolean!
         deleteCollection(collectionId: ID!): Boolean!
     }
 `;

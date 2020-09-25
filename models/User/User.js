@@ -19,12 +19,21 @@ User.schema.statics = {
                 password: hashedPassword,
                 collection_ids: [],
                 facebook_id: null,
-                premium: 'false',
+                premium: false,
                 date_created: DateTime.utc().toISODate(),
             });
         } catch (error) {
             throw error;
         }
+    },
+
+    deleteUser: async (email) => {
+        const deletedUser = await User.findOneAndDelete({ email });
+
+        if (!deletedUser) {
+            return null;
+        }
+        return true;
     },
 };
 

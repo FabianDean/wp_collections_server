@@ -218,11 +218,31 @@ const resolvers = {
         },
 
         /** @summary Delete a User
-         * @param userId The ID of the user to delete
-         * @returns True if successful or false if unsuccessful
+         * @param email The email of the user to delete
+         * @returns True if successful
          */
-        deleteUser: async (_, { userId }) => {
-            return null;
+        deleteUser: async (_, { email }, context) => {
+            const currentUser = context.getUser();
+
+            if (!currentUser) {
+                return new Error('Permission denied');
+            }
+
+            const user = await User.findOne({
+                email: email,
+            }).exec();
+
+            if (user && currentUser._id !== user._id) {
+                return new Error('Permission denied');
+            }
+
+            const deletedUser = await User.schema.statics.deleteUser(email);
+
+            if (deletedUser) {
+                await context.logout();
+            }
+
+            return deletedUser || new Error('Error deleting user');
         },
 
         /** @summary Delete a Collection

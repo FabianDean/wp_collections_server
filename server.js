@@ -103,15 +103,16 @@ const init = async () => {
 
         const newUserConfig = {
             _id: uuid(),
-            facebook_id: profile.id,
             username: `${profile.name.givenName} ${profile.name.familyName}`,
             email:
                 profile.emails && profile.emails[0] && profile.emails[0].value,
+            password: null,
+            facebook_id: profile.id,
         };
 
         const newUser = await User.create({
             ...newUserConfig,
-            premium: 'false',
+            premium: false,
             collection_ids: [],
             date_created: DateTime.utc().toISODate(),
         });
