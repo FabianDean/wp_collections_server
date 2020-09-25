@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Types = mongoose.Types;
 const fetch = require('node-fetch');
 const { v4: uuid } = require('uuid');
+const htmlToText = require('html-to-text');
 const User = require('../models/User/User');
 const Collection = require('../models/Collection/Collection');
 
@@ -77,6 +78,9 @@ const resolvers = {
                     author: item.author.replace(regex, ''),
                     slug: item.slug,
                     homepage: item.homepage || '',
+                    description: htmlToText.fromString(item.description),
+                    //.replace(/\n/g, ' '),
+                    short_description: item.short_description,
                     downloads: item.downloaded,
                     rating: item.rating,
                     ratings: {

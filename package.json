@@ -26,6 +26,7 @@
         "express-session": "^1.17.1",
         "graphql": "^15.3.0",
         "graphql-passport": "^0.6.3",
+        "html-to-text": "^5.1.1",
         "luxon": "^1.25.0",
         "mongoose": "^5.10.5",
         "node-fetch": "^2.6.1",

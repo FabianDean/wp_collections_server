@@ -25,6 +25,8 @@ const typeDefs = gql`
         author: String
         slug: String
         homepage: String
+        description: String
+        short_description: String
         downloads: Int
         rating: Int
         ratings: Ratings
@@ -34,6 +36,8 @@ const typeDefs = gql`
         author: String
         slug: String
         homepage: String
+        description: String
+        short_description: String
         downloads: Int
         rating: Int
         ratings: RatingsInput
