@@ -1,13 +1,12 @@
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
-const { DateTime } = require('luxon');
 const session = require('express-session');
 const passport = require('passport');
-const FacebookStrategy = require('passport-facebook');
-const { GraphQLLocalStrategy, buildContext } = require('graphql-passport');
+const { buildContext } = require('graphql-passport');
+require('dotenv').config();
 const { v4: uuid } = require('uuid');
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const typeDefs = require('./graphql/typedefs');
@@ -17,6 +16,8 @@ const User = require('./models/User/User');
 const init = async () => {
     const PORT = process.env.PORT || 4000;
     const app = express();
+
+    app.use(bodyParser.urlencoded({ extended: false }));
 
     /**
      * Configure CORS
@@ -28,7 +29,6 @@ const init = async () => {
     };
 
     app.use(cors(corsConfig));
-
     /**
      * Configure express-session with uuid
      */
@@ -40,11 +40,9 @@ const init = async () => {
             saveUninitialized: false,
         }),
     );
-
     /**
      * Configure Mongoose and connect to db
      */
-
     await mongoose
         .connect(process.env.DB_URL, {
             useNewUrlParser: true,
@@ -64,76 +62,7 @@ const init = async () => {
      */
     app.use(passport.initialize());
     app.use(passport.session());
-
-    passport.use(
-        new GraphQLLocalStrategy(async (email, password, done) => {
-            const users = await User.schema.statics.getUsers();
-            const matchingUser = await User.schema.methods.matchingUser(
-                email,
-                password,
-            );
-            const error = matchingUser
-                ? null
-                : new Error('Username/password is incorrect');
-            done(error, matchingUser);
-        }),
-    );
-
-    const facebookOptions = {
-        clientID: process.env.FACEBOOK_CLIENT_ID,
-        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-        callbackURL: 'http://localhost:4000/auth/facebook/callback',
-        profileFields: ['id', 'email', 'first_name', 'last_name'],
-    };
-
-    const facebookCallback = async (
-        accessToken,
-        refreshToken,
-        profile,
-        done,
-    ) => {
-        const users = await User.schema.statics.getUsers();
-        const matchingUser = await users.find(
-            (user) => user.facebook_id === profile.id,
-        );
-
-        if (matchingUser) {
-            done(null, matchingUser);
-            return;
-        }
-
-        const newUserConfig = {
-            _id: uuid(),
-            username: `${profile.name.givenName} ${profile.name.familyName}`,
-            email:
-                profile.emails && profile.emails[0] && profile.emails[0].value,
-            password: null,
-            facebook_id: profile.id,
-        };
-
-        const newUser = await User.create({
-            ...newUserConfig,
-            premium: false,
-            collection_ids: [],
-            date_created: DateTime.utc().toISODate(),
-        });
-
-        done(null, newUser);
-    };
-
-    passport.use(new FacebookStrategy(facebookOptions, facebookCallback));
-
-    passport.serializeUser((user, done) => {
-        done(null, user._id);
-    });
-
-    passport.deserializeUser(async (id, done) => {
-        const users = await User.schema.statics.getUsers();
-        const matchingUser = await users.find((user) => {
-            return user._id === id;
-        });
-        done(null, matchingUser);
-    });
+    require('./auth/auth.js');
 
     app.get(
         '/auth/facebook',
