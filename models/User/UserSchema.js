@@ -15,15 +15,12 @@ const UserSchema = new Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     password: String,
     facebook_id: String,
-    premium: {
-        type: Boolean,
-    },
-    collection_ids: {
-        type: [String],
-    },
+    premium: Boolean,
+    collection_ids: [String],
     date_created: String,
 });
 
