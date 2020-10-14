@@ -12,12 +12,7 @@ const init = async () => {
     /**
      * Configure CORS
      */
-    const corsConfig = {
-        methods: ['GET', 'POST', 'PUT', 'PATCH'],
-        origin: process.env.CLIENT_URL,
-    };
-
-    app.use(cors(corsConfig));
+    app.use(cors());
 
     /**
      * Configure Apollo Server
@@ -25,6 +20,8 @@ const init = async () => {
     const server = new ApolloServer({
         typeDefs,
         resolvers,
+        introspection: true,
+        playground: true,
     });
 
     server.applyMiddleware({ app });
