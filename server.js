@@ -16,6 +16,13 @@ const init = async () => {
     app.use(cors());
 
     /**
+     * Basic landing page
+     */
+    app.get('/', (req, res) => {
+        res.status(200).send('WP Collections (server) - GitHub: https://github.com/FabianDean/wp_collections_server');
+    });
+
+    /**
      * Configure Apollo Server
      */
     const server = new ApolloServer({
