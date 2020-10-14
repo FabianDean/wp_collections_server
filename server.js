@@ -1,9 +1,10 @@
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
-require('dotenv').config();
 const cors = require('cors');
 const typeDefs = require('./graphql/typedefs');
 const resolvers = require('./graphql/resolvers');
+if (process.env.NODE_ENV !== 'production') require('dotenv').config();
+
 
 const init = async () => {
     const PORT = process.env.PORT || 4000;
