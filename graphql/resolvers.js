@@ -53,6 +53,7 @@ const resolvers = {
                     slug: item.slug,
                     homepage: item.homepage,
                     description: item.description,
+                    downloads: item.downloaded,
                     rating: item.rating,
                     screenshot_url: item.screenshot_url,
                     preview_url: item.preview_url,
@@ -68,7 +69,24 @@ const resolvers = {
             const data = await res.json();
             const regex = /(<([^>]+)>)/gi; // used to remove the anchor tags around author
 
-            return {};
+            return {
+                name: data.name,
+                author: data.author.replace(regex, ''),
+                slug: data.slug,
+                homepage: data.homepage || '',
+                description: htmlToText.fromString(data.sections.description),
+                //.replace(/\n/g, ' '),
+                //short_description: data.sections.short_description,
+                downloads: data.active_installs, // TODO: not the same as downlads so needs fix
+                rating: data.rating,
+                ratings: {
+                    one: data.ratings[1],
+                    two: data.ratings[2],
+                    three: data.ratings[3],
+                    four: data.ratings[4],
+                    five: data.ratings[5],
+                },
+            };
         },
 
         /** @summary Get information about a specific theme.
@@ -77,9 +95,18 @@ const resolvers = {
         getThemeInfo: async (_, { slug }) => {
             const res = await fetch(`${process.env.WP_THEME_INFO_URL}${slug}`);
             const data = await res.json();
-            const regex = /(<([^>]+)>)/gi; // used to remove the anchor tags around author
 
-            return {};
+            return {
+                name: data.name,
+                author: data.author,
+                slug: data.slug,
+                homepage: data.homepage,
+                description: data.sections.description,
+                downloads: data.downloaded,
+                rating: data.rating,
+                screenshot_url: data.screenshot_url,
+                preview_url: data.preview_url,
+            };
         },
     },
 };
