@@ -15,6 +15,22 @@ const typeDefs = gql`
         four: Int
         five: Int
     }
+    type Screenshot {
+        src: String
+        caption: String
+    }
+    input ScreenshotInput {
+        src: String
+        caption: String
+    }
+    type Banner {
+        low: String
+        high: String
+    }
+    input BannerInput {
+        low: String
+        high: String
+    }
     type Plugin {
         name: String
         author: String
@@ -25,6 +41,8 @@ const typeDefs = gql`
         downloads: Int
         rating: Int
         ratings: Ratings
+        screenshots: [Screenshot]
+        banners: [Banner]
     }
     input PluginInput {
         name: String
@@ -36,6 +54,8 @@ const typeDefs = gql`
         downloads: Int
         rating: Int
         ratings: RatingsInput
+        screenshots: [ScreenshotInput]
+        banners: [BannerInput]
     }
     type Theme {
         name: String

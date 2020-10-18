@@ -86,6 +86,18 @@ const resolvers = {
                     four: data.ratings[4],
                     five: data.ratings[5],
                 },
+                screenshots: Object.keys(data.screenshots).map((item) => {                    
+                    return {
+                        src: data.screenshots[item].src,
+                        caption: data.screenshots[item].caption,
+                    };
+                }),
+                banners: Object.keys(data.banners).map((item) => {
+                    return {
+                        low: data.banners[item],
+                        high: data.banners[item],
+                    };
+                }),
             };
         },
 
