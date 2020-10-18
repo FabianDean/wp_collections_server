@@ -53,7 +53,7 @@ const resolvers = {
                     slug: item.slug,
                     homepage: item.homepage,
                     description: item.description,
-                    downloads: item.downloaded,
+                    // downloads: item.downloaded, --- deprecated?
                     rating: item.rating,
                     screenshot_url: item.screenshot_url,
                     preview_url: item.preview_url,
